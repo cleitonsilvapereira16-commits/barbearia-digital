@@ -3,87 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barbearia Digital</title>
+  <title>Barbearia Premium</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{
-      --preto:#141414; --preto-2:#232323;
-      --branco:#FFFFFF;
-      --cinza-050:#FAFAFA; --cinza-100:#F1F1F1; --cinza-200:#E4E4E4; --cinza-300:#D2D2D2;
-      --cinza-400:#B3B3B3; --cinza-600:#7A7A7A; --cinza-800:#333333;
+    :root {
+      --bg-principal: #121212;
+      --bg-card: #1A1A1A;
+      --bg-input: #262626;
+      --dourado: #D4AF37;
+      --dourado-hover: #AA8B22;
+      --texto-claro: #F5F5F5;
+      --texto-mutado: #A3A3A3;
+      --borda: #333333;
+      --verde-wsp: #25D366;
       --serif: ui-serif, Georgia, "Times New Roman", serif;
-      --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    #bb-root{
-      min-height:100vh; color:var(--preto); font-family:var(--sans);
-      background-color:var(--cinza-050);
-      background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.018) 0px, rgba(0,0,0,.018) 1px, transparent 1px, transparent 10px);
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    #bb-root {
+      min-height: 100vh;
+      color: var(--texto-claro);
+      font-family: var(--sans);
+      background-color: var(--bg-principal);
+      background-image: radial-gradient(circle at 50% 0%, #222222 0%, var(--bg-principal) 70%);
     }
-    #bb-root *{ box-sizing:border-box; }
-    .bb-top{
-      position:relative; background:var(--preto); color:var(--branco); padding:22px 26px;
-      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+
+    .bb-top {
+      background: #0A0A0A;
+      border-bottom: 1px solid var(--borda);
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
     }
-    .bb-brand{ display:flex; align-items:center; gap:16px; }
-    .bb-badge-name{ font-family:var(--serif); font-size:22px; letter-spacing:.05em; font-weight:700; margin:0; }
-    .bb-badge-sub{ font-family:var(--serif); font-size:10px; letter-spacing:.32em; color:var(--cinza-400); text-transform:uppercase; margin-top:2px; }
-    .bb-who{ display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--cinza-300); }
-    .bb-who select{ background:var(--preto-2); color:var(--branco); border:1px solid #3a3a3a; border-radius:7px; padding:7px 10px; font-size:12.5px; }
-    .bb-pill-dono{ background:var(--branco); color:var(--preto); font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; }
-    .bb-tabs{ background:var(--branco); border-bottom:1px solid var(--cinza-200); padding:0 26px; display:flex; gap:4px; overflow-x:auto; }
-    .bb-tab{ padding:14px 18px; font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--cinza-600); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
-    .bb-tab.active{ color:var(--preto); border-bottom-color:var(--preto); }
-    .bb-body{ padding:26px; max-width:1180px; margin:0 auto; }
-    .bb-hero{ text-align:center; padding:26px 10px 22px; }
-    .bb-hero h1{ font-family:var(--serif); font-size:30px; margin:6px 0 4px; }
-    .bb-section-title{ display:flex; align-items:center; gap:9px; font-family:var(--serif); font-size:15px; font-weight:700; margin:26px 0 12px; color:var(--preto); }
-    .bb-section-title::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--cinza-300), transparent); }
-    .bb-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-bottom:22px; }
-    .bb-card{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:18px 16px; position:relative; }
-    .bb-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px; background:repeating-linear-gradient(-45deg, var(--preto) 0 6px, var(--branco) 6px 12px); }
-    .bb-avatar{ width:46px; height:46px; border-radius:50%; background:var(--preto); color:var(--branco); display:flex; align-items:center; justify-content:center; font-weight:700; }
-    .bb-status{ display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
-    .bb-status.disponivel{ background:var(--branco); border:1.5px solid var(--preto); color:var(--preto); }
-    .bb-status.ocupado{ background:var(--cinza-300); color:var(--preto-2); }
-    .bb-panel{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:24px; margin-bottom:18px; position:relative; }
-    .bb-panel::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px; background:repeating-linear-gradient(-45deg, var(--preto) 0 6px, var(--branco) 6px 12px); }
-    .bb-form-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px; }
-    .bb-field{ display:flex; flex-direction:column; gap:5px; }
-    .bb-field label{ font-size:11.5px; font-weight:700; color:var(--cinza-600); }
-    .bb-field input, .bb-field select{ border:1px solid var(--cinza-300); border-radius:8px; padding:8px 10px; font-size:13.5px; width:100%; }
-    .bb-btn{ border:none; border-radius:999px; padding:10px 18px; font-size:12.5px; font-weight:800; cursor:pointer; text-decoration:none; display:inline-block; }
-    .bb-btn.primary{ background:var(--preto); color:var(--branco); }
-    .bb-btn.wsp{ background:#25D366; color:#FFF; margin-top:10px; }
-    .bb-grid-wrap{ overflow-x:auto; border:1px solid var(--cinza-200); border-radius:14px; background:var(--branco); }
-    table.bb-grid{ border-collapse:collapse; width:100%; font-size:12.5px; }
-    table.bb-grid th{ background:var(--preto); color:var(--branco); padding:12px 8px; }
-    table.bb-grid td{ border-bottom:1px solid var(--cinza-100); border-right:1px solid var(--cinza-100); padding:8px; text-align:center; }
-    .bb-slot{ width:100%; padding:8px 4px; font-size:11px; font-weight:800; text-transform:uppercase; border-radius:4px; }
-    .bb-slot.livre{ background:var(--branco); color:var(--cinza-400); }
-    .bb-slot.ocupado{ background:var(--cinza-300); color:var(--preto-2); }
-    .bb-cortes-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
-    .bb-corte-card{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:18px; text-align:center; }
+
+    .bb-badge-name { font-family: var(--serif); font-size: 24px; color: var(--dourado); font-weight: 700; letter-spacing: 1px; }
+    .bb-badge-sub { font-size: 10px; letter-spacing: 4px; color: var(--texto-mutado); text-transform: uppercase; margin-top: 2px; }
+
+    .bb-who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .bb-who select { background: var(--bg-input); color: var(--texto-claro); border: 1px solid var(--borda); border-radius: 6px; padding: 8px 12px; }
+
+    .bb-tabs { background: #0F0F0F; border-bottom: 1px solid var(--borda); padding: 0 30px; display: flex; gap: 10px; overflow-x: auto; }
+    .bb-tab { padding: 16px 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--texto-mutado); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: 0.3s; }
+    .bb-tab.active, .bb-tab:hover { color: var(--dourado); border-bottom-color: var(--dourado); }
+
+    .bb-body { padding: 30px; max-width: 1100px; margin: 0 auto; }
+    .bb-hero { text-align: center; margin-bottom: 30px; }
+    .bb-hero h1 { font-family: var(--serif); font-size: 32px; color: var(--dourado); margin-bottom: 5px; }
+
+    .bb-panel { background: var(--bg-card); border: 1px solid var(--borda); border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .bb-panel h2 { font-family: var(--serif); color: var(--dourado); margin-bottom: 20px; font-size: 20px; border-bottom: 1px solid var(--borda); padding-bottom: 10px; }
+
+    .bb-form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .bb-field { display: flex; flex-direction: column; gap: 6px; }
+    .bb-field label { font-size: 12px; font-weight: 600; color: var(--texto-mutado); text-transform: uppercase; }
+    .bb-field input, .bb-field select { background: var(--bg-input); color: var(--texto-claro); border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none; }
+    .bb-field input:focus, .bb-field select:focus { border-color: var(--dourado); }
+
+    .bb-btn { border: none; border-radius: 8px; padding: 12px 22px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; text-transform: uppercase; }
+    .bb-btn.primary { background: var(--dourado); color: #000; }
+    .bb-btn.primary:hover { background: var(--dourado-hover); }
+    .bb-btn.wsp { background: var(--verde-wsp); color: #FFF; margin-top: 10px; }
+
+    .bb-grid-wrap { overflow-x: auto; border: 1px solid var(--borda); border-radius: 8px; }
+    table.bb-grid { border-collapse: collapse; width: 100%; font-size: 13px; text-align: left; }
+    table.bb-grid th { background: #0A0A0A; color: var(--dourado); padding: 14px; border-bottom: 1px solid var(--borda); }
+    table.bb-grid td { padding: 12px 14px; border-bottom: 1px solid var(--borda); color: var(--texto-claro); }
+
+    .bb-cortes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .bb-corte-card { background: var(--bg-card); border: 1px solid var(--borda); border-radius: 12px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
+    .bb-corte-card::before { content: ""; position: absolute; top:0; left:0; width: 100%; height: 3px; background: var(--dourado); }
+    .bb-corte-card h3 { font-family: var(--serif); color: var(--texto-claro); font-size: 18px; margin-bottom: 8px; }
+    .bb-corte-card p { font-size: 12px; color: var(--texto-mutado); margin-bottom: 15px; }
+    .bb-corte-card .preco { font-size: 18px; font-weight: 700; color: var(--dourado); }
   </style>
 </head>
 <body>
   <div id="bb-root">
     <div class="bb-top">
-      <div class="bb-brand" id="bb-logo"></div>
+      <div id="bb-logo"></div>
       <div class="bb-who" id="bb-who"></div>
     </div>
     <div class="bb-tabs" id="bb-tabs"></div>
-    <div class="bb-body" id="bb-body">Carregando…</div>
+    <div class="bb-body" id="bb-body">Carregando...</div>
   </div>
 
   <script>
   (function(){
     "use strict";
 
-    // Insira suas credenciais do Supabase aqui
     const SUPABASE_URL = "SUA_SUPABASE_URL_AQUI"; 
     const SUPABASE_KEY = "SUA_SUPABASE_ANON_KEY_AQUI"; 
     let sbClient = null;
-    if(SUPABASE_URL && SUPABASE_KEY && window.supabase && !SUPABASE_URL.includes("SUA_SUPABASE")){
+    if(SUPABASE_URL && SUPABASE_KEY && !SUPABASE_URL.includes("SUA_SUPABASE")){
       sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
@@ -92,78 +108,27 @@
     const whoBox = document.getElementById('bb-who');
     const tabsBox = document.getElementById('bb-tabs');
 
-    let config = { nomeLoja:'Barbearia do Danilo', whatsappAdmin:'5561999999999' };
+    let config = { nomeLoja: 'Danilo Barber Shop', whatsappAdmin: '5561999999999' };
+    
     let barbeiros = [
-      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true, disponivel:true },
-      { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, tipo_fechamento:'mensal', ativo:true, disponivel:true },
-      { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true, disponivel:true }
+      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true },
+      { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, tipo_fechamento:'mensal', ativo:true },
+      { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true }
     ];
+
     let cortes = [
-      { id:'1', nome:'Taper Fade', desc:'Transição suave nas laterais.', preco:35 },
-      { id:'2', nome:'Degradê', desc:'Corte tradicional com degradê.', preco:35 },
-      { id:'3', nome:'Na Zero', desc:'Raspado bem rente.', preco:30 }
+      { id:'1', nome:'Taper Fade', desc:'Transição suave nas têmporas e nuca.', preco:40 },
+      { id:'2', nome:'Degradê (Low/Mid/High)', desc:'Degradê clássico em várias alturas.', preco:40 },
+      { id:'3', nome:'Americano', desc:'Laterais leves e topo texturizado.', preco:40 },
+      { id:'4', nome:'Modern Mullet', desc:'Lateral raspada e nuca alongada.', preco:45 },
+      { id:'5', nome:'Buzz Cut', desc:'Raspado uniforme com contorno alinhado.', preco:35 },
+      { id:'6', nome:'Corte na Tesoura', desc:'Acabamento 100% manual na tesoura.', preco:50 }
     ];
+
     let agendamentos = JSON.parse(localStorage.getItem('barb-agendamentos') || '[]');
-    let meuNome = localStorage.getItem('barb-meu-nome') || null;
     let roleMode = localStorage.getItem('barb-role') || null;
-    let activeTab = 'painel';
+    let activeTab = 'agendar';
     let selectedDate = new Date().toISOString().slice(0,10);
-
-    async function syncSupabaseData(){
-      if(!sbClient) return;
-      try {
-        const { data: cfg } = await sbClient.from('se_configuracoes').select('*').limit(1).single();
-        if(cfg){
-          config.nomeLoja = cfg.nome_barbearia || config.nomeLoja;
-          config.whatsappAdmin = cfg.whatsapp_gestor || config.whatsappAdmin;
-        }
-
-        const { data: barb } = await sbClient.from('se_barbeiros').select('*').eq('ativo', true);
-        if(barb && barb.length > 0){
-          barbeiros = barb.map(b => ({
-            id: b.id,
-            nome: b.nome,
-            telefone_whatsapp: b.telefone_whatsapp,
-            porcentagem_comissao: Number(b.porcentagem_comissao || 50),
-            tipo_fechamento: b.tipo_fechamento || 'semanal',
-            ativo: b.ativo,
-            disponivel: true
-          }));
-        }
-
-        const { data: serv } = await sbClient.from('se_servicos').select('*');
-        if(serv && serv.length > 0){
-          cortes = serv.map(s => ({
-            id: s.id,
-            nome: s.nome,
-            desc: s.descricao || 'Serviço profissional',
-            preco: Number(s.preco)
-          }));
-        }
-
-        const { data: ags } = await sbClient.from('se_agendamentos').select('*, se_barbeiros(nome), se_servicos(nome)');
-        if(ags){
-          agendamentos = ags.map(a => {
-            const dt = new Date(a.data_horario);
-            return {
-              id: a.id,
-              cliente: a.cliente_nome,
-              telefone: a.cliente_whatsapp,
-              barbeiro_id: a.barbeiro_id,
-              barbeiro: a.se_barbeiros?.nome || 'Desconhecido',
-              data: dt.toISOString().slice(0,10),
-              hora: dt.toTimeString().slice(0,5),
-              corte: a.se_servicos?.nome || 'Corte',
-              valor_total: Number(a.valor_total),
-              porcentagem_comissao: Number(a.porcentagem_comissao_aplicada || 50)
-            };
-          });
-          localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
-        }
-      } catch(err) {
-        console.warn("Usando fallback local temporário:", err);
-      }
-    }
 
     function isAdmin(){ return roleMode === 'gestor'; }
     function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -184,46 +149,36 @@
     }
 
     function renderLogo(){
-      logoBox.innerHTML = `<div><div class="bb-badge-name">${esc(config.nomeLoja)}</div><div class="bb-badge-sub">BARBER & GROOMING</div></div>`;
+      logoBox.innerHTML = `<div><div class="bb-badge-name">${esc(config.nomeLoja)}</div><div class="bb-badge-sub">Barber & Executive Grooming</div></div>`;
     }
 
     function renderWho(){
       whoBox.innerHTML = `
-        ${roleMode ? `<span class="bb-pill-dono">${esc(roleMode)}</span>` : ''}
         <select id="bb-select">
-          <option value="">Cliente / Visitante</option>
-          ${barbeiros.map(b => `<option value="${esc(b.nome)}" ${meuNome===b.nome?'selected':''}>${esc(b.nome)}</option>`).join('')}
-          <option value="__gestor" ${roleMode==='gestor'?'selected':''}>🔒 Gestor</option>
+          <option value="">Área do Cliente</option>
+          <option value="__gestor" ${roleMode==='gestor'?'selected':''}>🔒 Painel do Gestor</option>
         </select>
       `;
       document.getElementById('bb-select').onchange = (e) => {
-        const val = e.target.value;
-        if(val === '__gestor'){
-          const pin = prompt('Digite a senha de Gestor:');
-          if(pin === '9871'){ 
-            roleMode = 'gestor'; 
-            meuNome = null; 
-          } else { 
-            alert('Senha incorreta!'); 
-            return; 
-          }
-        } else if(val) {
-          roleMode = 'colaborador'; 
-          meuNome = val;
+        if(e.target.value === '__gestor'){
+          const pin = prompt('Digite a senha do Gestor:');
+          if(pin === '9871'){ roleMode = 'gestor'; } 
+          else { alert('Senha incorreta!'); return; }
         } else {
-          roleMode = null; 
-          meuNome = null;
+          roleMode = null;
         }
         localStorage.setItem('barb-role', roleMode || '');
-        localStorage.setItem('barb-meu-nome', meuNome || '');
         boot();
       };
     }
 
     function renderTabs(){
-      const tabs = [{k:'painel', label:'Painel'}, {k:'agendar', label:'Agendar Corte'}, {k:'cortes', label:'Consultar Cortes'}];
+      const tabs = [
+        {k:'agendar', label:'Agendar Corte'}, 
+        {k:'cortes', label:'Buscar Cortes & Preços'}
+      ];
       if(isAdmin()) {
-        tabs.push({k:'agendamentos', label:'Agendamentos'}, {k:'fechamento', label:'Fechamento & Comissões'}, {k:'gerenciar', label:'Gerenciar'});
+        tabs.push({k:'agendamentos', label:'Agendamentos'}, {k:'fechamento', label:'Fechamento & Comissões'}, {k:'gerenciar', label:'Gerenciar Barbeiros & Servicos'});
       }
       tabsBox.innerHTML = tabs.map(t => `<div class="bb-tab ${activeTab===t.k?'active':''}" onclick="window.setTab('${t.k}')">${t.label}</div>`).join('');
     }
@@ -231,87 +186,36 @@
     window.setTab = (tab) => { activeTab = tab; renderTabs(); renderBody(); };
 
     function renderBody(){
-      if(activeTab === 'agendar') {
-        renderAgendar();
-      } else if(activeTab === 'cortes') {
-        renderCortes();
-      } else if(activeTab === 'agendamentos' && isAdmin()) {
-        renderAgendamentos();
-      } else if(activeTab === 'fechamento' && isAdmin()) {
-        renderFechamento();
-      } else if(activeTab === 'gerenciar' && isAdmin()) {
-        renderGerenciar();
-      } else {
-        renderPainel();
-      }
-    }
-
-    function renderPainel(){
-      const slots = gerarSlots();
-      const ativos = barbeiros.filter(b => b.ativo);
-
-      body.innerHTML = `
-        <div class="bb-hero">
-          <h1>${esc(config.nomeLoja)}</h1>
-          <p>Selecione seu barbeiro e faça seu agendamento online</p>
-        </div>
-
-        <div class="bb-section-title">Barbeiros da Equipe</div>
-        <div class="bb-cards">
-          ${ativos.map(b => `
-            <div class="bb-card">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <div class="bb-avatar">${b.nome[0]}</div>
-                <div>
-                  <b>${esc(b.nome)}</b><br>
-                  <span class="bb-status ${b.disponivel?'disponivel':'ocupado'}">${b.disponivel?'Disponível':'Ocupado'}</span>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="bb-section-title">Agenda do Dia</div>
-        <div class="bb-grid-wrap">
-          <table class="bb-grid">
-            <thead>
-              <tr><th>Horário</th>${ativos.map(b => `<th>${esc(b.nome)}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              ${slots.map(hhmm => `
-                <tr>
-                  <td><b>${hhmm}</b></td>
-                  ${ativos.map(b => {
-                    const ocup = isSlotOcupado(b.nome, selectedDate, hhmm);
-                    const st = ocup ? 'ocupado' : 'livre';
-                    return `<td><div class="bb-slot ${st}">${st}</div></td>`;
-                  }).join('')}
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
+      if(activeTab === 'cortes') renderCortes();
+      else if(activeTab === 'agendamentos' && isAdmin()) renderAgendamentos();
+      else if(activeTab === 'fechamento' && isAdmin()) renderFechamento();
+      else if(activeTab === 'gerenciar' && isAdmin()) renderGerenciar();
+      else renderAgendar();
     }
 
     function renderAgendar(){
       const ativos = barbeiros.filter(b => b.ativo);
 
       body.innerHTML = `
+        <div class="bb-hero">
+          <h1>Agende seu Horário</h1>
+          <p style="color:var(--texto-mutado);">Escolha o serviço, o profissional e garanta seu horário em segundos.</p>
+        </div>
+
         <div class="bb-panel">
-          <h2>Agendar Horário</h2>
+          <h2>Novo Agendamento</h2>
           <form id="form-agendar">
             <div class="bb-form-row">
-              <div class="bb-field"><label>Seu Nome</label><input type="text" id="ag-nome" required></div>
-              <div class="bb-field"><label>Telefone/WhatsApp</label><input type="tel" id="ag-fone" placeholder="(61) 99999-9999" required></div>
+              <div class="bb-field"><label>Seu Nome</label><input type="text" id="ag-nome" placeholder="Digite seu nome completo" required></div>
+              <div class="bb-field"><label>WhatsApp</label><input type="tel" id="ag-fone" placeholder="(61) 99999-9999" required></div>
               <div class="bb-field"><label>Data</label><input type="date" id="ag-data" value="${selectedDate}" required></div>
             </div>
 
             <div class="bb-form-row">
               <div class="bb-field">
-                <label>Barbeiro</label>
+                <label>Barbeiro Responsável</label>
                 <select id="ag-barbeiro" required>
-                  <option value="">Selecione...</option>
+                  <option value="">Selecione um barbeiro...</option>
                   ${ativos.map(b => `<option value="${esc(b.nome)}">${esc(b.nome)}</option>`).join('')}
                 </select>
               </div>
@@ -322,25 +226,21 @@
                 </select>
               </div>
               <div class="bb-field">
-                <label>Corte</label>
+                <label>Selecione o Corte</label>
                 <select id="ag-corte" required>
                   ${cortes.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} - R$ ${c.preco}</option>`).join('')}
                 </select>
               </div>
             </div>
 
-            <div class="bb-field" style="margin-bottom:14px;">
-              <label>Adicionais</label>
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <label><input type="checkbox" name="add" value="Barba"> Barba (+R$20)</label>
-                <label><input type="checkbox" name="add" value="Bigode"> Bigode (+R$10)</label>
-                <label><input type="checkbox" name="add" value="Sobrancelha"> Sobrancelha (+R$12)</label>
-              </div>
-            </div>
-
-            <div class="bb-field" style="margin-bottom:14px;">
-              <label>Outros Adicionais / Observações</label>
-              <input type="text" id="ag-outros" placeholder="Ex: Desenho na lateral, lavagem especial">
+            <div class="bb-field" style="margin-bottom:20px;">
+              <label>Serviço Adicional</label>
+              <select id="ag-adicional">
+                <option value="Somente a opção não mesmo">Não (Apenas o Corte)</option>
+                <option value="Barba Completa (+R$30)">Barba Completa (+R$30)</option>
+                <option value="Sobrancelha (+R$15)">Sobrancelha (+R$15)</option>
+                <option value="Freestyle / Desenho (+R$20)">Freestyle / Desenho (+R$20)</option>
+              </select>
             </div>
 
             <button type="submit" class="bb-btn primary">Confirmar Agendamento</button>
@@ -357,63 +257,35 @@
         const cliente = document.getElementById('ag-nome').value;
         const fone = document.getElementById('ag-fone').value;
         const corteNome = document.getElementById('ag-corte').value;
+        const adicional = document.getElementById('ag-adicional').value;
 
         if(isSlotOcupado(bNome, data, hora)){
-          alert('Este horário já está ocupado para este barbeiro! Escolha outro horário.');
+          alert('Este horário já está ocupado para este barbeiro! Escolha outro.');
           return;
         }
 
         const barbeiroObj = barbeiros.find(b => b.nome.toUpperCase() === bNome.toUpperCase()) || barbeiros[0];
         const corteObj = cortes.find(c => c.nome.toUpperCase() === corteNome.toUpperCase()) || cortes[0];
 
-        const valorTotal = corteObj ? corteObj.preco : 35;
-        const comissaoPct = barbeiroObj ? barbeiroObj.porcentagem_comissao : 50;
-
-        const novoLocal = { 
-          id: Date.now(), 
-          cliente, 
-          telefone: fone, 
-          barbeiro: barbeiroObj.nome, 
-          data, 
-          hora, 
-          corte: corteNome,
-          valor_total: valorTotal,
-          porcentagem_comissao: comissaoPct
-        };
-        agendamentos.push(novoLocal);
+        const novo = { id: Date.now(), cliente, telefone: fone, barbeiro: barbeiroObj.nome, data, hora, corte: corteNome, valor_total: corteObj.preco, porcentagem_comissao: 50 };
+        agendamentos.push(novo);
         localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
 
-        if(sbClient){
-          const dataHorarioIso = new Date(`${data}T${hora}:00`).toISOString();
-          await sbClient.from('se_agendamentos').insert([{
-            cliente_nome: cliente,
-            cliente_whatsapp: fone,
-            barbeiro_id: barbeiroObj.id,
-            servico_id: corteObj.id,
-            data_horario: dataHorarioIso,
-            valor_total: valorTotal,
-            porcentagem_comissao_aplicada: comissaoPct,
-            status: 'agendado'
-          }]);
-        }
-
-        // WhatsApp do Barbeiro Selecionado
-        const numBarbeiro = barbeiroObj.telefone_whatsapp || config.whatsappAdmin;
-        const msgBarbeiro = encodeURIComponent(`💈 *Novo Agendamento!*\n\n👤 *Cliente:* ${cliente}\n✂️ *Serviço:* ${corteNome}\n📅 *Data/Hora:* ${data} às ${hora}\n💰 *Valor:* R$ ${valorTotal.toFixed(2)}`);
-        const urlWspBarbeiro = `https://wa.me/${numBarbeiro}?text=${msgBarbeiro}`;
-
-        // WhatsApp Central do Gestor (Danilo)
-        const msgGestor = encodeURIComponent(`🔔 *Aviso Gestor - Novo Agendamento*\n\n💈 *Barbeiro:* ${barbeiroObj.nome}\n👤 *Cliente:* ${cliente} (${fone})\n✂️ *Serviço:* ${corteNome}\n📅 *Data/Hora:* ${data} às ${hora}\n💰 *Valor:* R$ ${valorTotal.toFixed(2)}`);
-        const urlWspGestor = `https://wa.me/${config.whatsappAdmin}?text=${msgGestor}`;
+        // Formatação exata do script de mensagem no WhatsApp solicitada
+        const dataFormatada = data.split('-').reverse().join('/');
+        
+        const textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPra o dia e hora tal: ${dataFormatada} às ${hora}\nserviço adicional: ${adicional}`;
+        
+        const urlWspBarbeiro = `https://wa.me/${barbeiroObj.telefone_whatsapp}?text=${encodeURIComponent(textoMsg)}`;
+        const urlWspGestor = `https://wa.me/${config.whatsappAdmin}?text=${encodeURIComponent("Notificação de Agendamento:\n" + textoMsg)}`;
 
         document.getElementById('ag-confirmacao').innerHTML = `
-          <div class="bb-panel" style="border-left:5px solid #22c55e;">
-            <h3 style="color:#15803d; margin:0 0 8px;">✔ Agendamento Reservado!</h3>
-            <p style="margin:0 0 10px;">Horário reservado para <b>${cliente}</b> com <b>${barbeiroObj.nome}</b> no dia <b>${data} às ${hora}</b>.<br>
-            <span style="color:#92400e; font-size:12px;">⚠️ Tolerância máxima de atraso: 5 minutos.</span></p>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="bb-panel" style="border-left: 4px solid var(--dourado);">
+            <h3 style="color:var(--dourado); margin-bottom:10px;">✔ Agendamento Confirmado!</h3>
+            <p style="margin-bottom:15px; font-size:14px;">Envie o comprovante/aviso diretamente para o WhatsApp do profissional e do gestor:</p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
               <a href="${urlWspBarbeiro}" target="_blank" class="bb-btn wsp">📲 Notificar Barbeiro (${barbeiroObj.nome})</a>
-              <a href="${urlWspGestor}" target="_blank" class="bb-btn wsp" style="background:#1e293b;">👑 Notificar Gestor (Danilo)</a>
+              <a href="${urlWspGestor}" target="_blank" class="bb-btn wsp" style="background:#333;">👑 Notificar Gestor (Danilo)</a>
             </div>
           </div>
         `;
@@ -422,40 +294,59 @@
 
     function renderCortes(){
       body.innerHTML = `
-        <div class="bb-section-title">Exemplos de Cortes</div>
-        <div class="bb-cortes-grid">
-          ${cortes.map(c => `
-            <div class="bb-corte-card">
-              <h3>${esc(c.nome)}</h3>
-              <p>${esc(c.desc)}</p>
-              <b>R$ ${c.preco}</b>
-            </div>
-          `).join('')}
+        <div class="bb-panel">
+          <h2>Buscar Cortes & Tabela de Preços (2026)</h2>
+          <div style="margin-bottom:20px;">
+            <input type="text" id="busca-corte" placeholder="🔍 Digite o nome do corte para buscar..." style="width:100%; background:var(--bg-input); color:#fff; border:1px solid var(--borda); padding:12px; border-radius:8px;">
+          </div>
+          <div class="bb-cortes-grid" id="lista-cortes">
+            ${cortes.map(c => `
+              <div class="bb-corte-card">
+                <h3>${esc(c.nome)}</h3>
+                <p>${esc(c.desc)}</p>
+                <div class="preco">R$ ${c.preco.toFixed(2)}</div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       `;
+
+      document.getElementById('busca-corte').oninput = (e) => {
+        const termo = e.target.value.toLowerCase();
+        const filtrados = cortes.filter(c => c.nome.toLowerCase().includes(termo) || c.desc.toLowerCase().includes(termo));
+        document.getElementById('lista-cortes').innerHTML = filtrados.map(c => `
+          <div class="bb-corte-card">
+            <h3>${esc(c.nome)}</h3>
+            <p>${esc(c.desc)}</p>
+            <div class="preco">R$ ${c.preco.toFixed(2)}</div>
+          </div>
+        `).join('');
+      };
     }
 
     function renderAgendamentos(){
       body.innerHTML = `
         <div class="bb-panel">
-          <h2>Todos os Agendamentos</h2>
-          <table class="bb-grid">
-            <thead>
-              <tr><th>Data/Hora</th><th>Cliente</th><th>Telefone</th><th>Barbeiro</th><th>Corte</th><th>Valor</th></tr>
-            </thead>
-            <tbody>
-              ${agendamentos.map(a => `
-                <tr>
-                  <td>${a.data} ${a.hora}</td>
-                  <td>${esc(a.cliente)}</td>
-                  <td>${esc(a.telefone || '-')}</td>
-                  <td>${esc(a.barbeiro)}</td>
-                  <td>${esc(a.corte)}</td>
-                  <td>R$ ${(a.valor_total || 35).toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          <h2>Agendamentos Cadastrados</h2>
+          <div class="bb-grid-wrap">
+            <table class="bb-grid">
+              <thead>
+                <tr><th>Data/Hora</th><th>Cliente</th><th>Telefone</th><th>Barbeiro</th><th>Corte</th><th>Valor</th></tr>
+              </thead>
+              <tbody>
+                ${agendamentos.map(a => `
+                  <tr>
+                    <td>${a.data} ${a.hora}</td>
+                    <td>${esc(a.cliente)}</td>
+                    <td>${esc(a.telefone)}</td>
+                    <td>${esc(a.barbeiro)}</td>
+                    <td>${esc(a.corte)}</td>
+                    <td>R$ ${(a.valor_total || 40).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </div>
       `;
     }
@@ -463,83 +354,47 @@
     function renderFechamento(){
       body.innerHTML = `
         <div class="bb-panel">
-          <h2>📊 Controle de Fechamento & Comissões</h2>
-          <div class="bb-form-row" style="align-items:flex-end;">
+          <h2>📊 Fechamento Financeiro & Comissões (50%)</h2>
+          <div class="bb-form-row">
             <div class="bb-field"><label>Data Início</label><input type="date" id="fc-inicio" value="${selectedDate}"></div>
             <div class="bb-field"><label>Data Fim</label><input type="date" id="fc-fim" value="${selectedDate}"></div>
-            <button class="bb-btn primary" id="btn-filtrar-fc">Calcular Fechamento</button>
+            <button class="bb-btn primary" id="btn-fc" style="margin-top:18px;">Filtrar Período</button>
           </div>
-          <div id="resultado-fechamento" style="margin-top:20px;"></div>
+          <div id="res-fechamento" style="margin-top:20px;"></div>
         </div>
       `;
 
-      const calcular = () => {
-        const dtInicio = document.getElementById('fc-inicio').value;
-        const dtFim = document.getElementById('fc-fim').value;
+      const calc = () => {
+        const i = document.getElementById('fc-inicio').value;
+        const f = document.getElementById('fc-fim').value;
+        const ags = agendamentos.filter(a => a.data >= i && a.data <= f);
 
-        const agsFiltrados = agendamentos.filter(a => a.data >= dtInicio && a.data <= dtFim);
-        const relatorio = {};
+        const rel = {};
+        barbeiros.forEach(b => { rel[b.nome] = { atend:0, bruto:0, comissao:0, liquido:0 }; });
 
-        barbeiros.forEach(b => {
-          relatorio[b.nome.toUpperCase()] = {
-            nome: b.nome,
-            tipoFechamento: b.tipo_fechamento || 'semanal',
-            comissaoPct: b.porcentagem_comissao || 50,
-            qtdAtendimentos: 0,
-            faturamentoTotal: 0,
-            valorComissao: 0,
-            valorBarbearia: 0
-          };
+        ags.forEach(a => {
+          if(!rel[a.barbeiro]) rel[a.barbeiro] = { atend:0, bruto:0, comissao:0, liquido:0 };
+          const v = a.valor_total || 40;
+          rel[a.barbeiro].atend += 1;
+          rel[a.barbeiro].bruto += v;
+          rel[a.barbeiro].comissao += (v * 0.5);
+          rel[a.barbeiro].liquido += (v * 0.5);
         });
 
-        agsFiltrados.forEach(a => {
-          const key = a.barbeiro.toUpperCase();
-          if(!relatorio[key]){
-            relatorio[key] = {
-              nome: a.barbeiro,
-              tipoFechamento: 'semanal',
-              comissaoPct: a.porcentagem_comissao || 50,
-              qtdAtendimentos: 0,
-              faturamentoTotal: 0,
-              valorComissao: 0,
-              valorBarbearia: 0
-            };
-          }
-
-          const vTotal = Number(a.valor_total || 35);
-          const pct = Number(a.porcentagem_comissao || 50) / 100;
-          const vComissao = vTotal * pct;
-
-          relatorio[key].qtdAtendimentos += 1;
-          relatorio[key].faturamentoTotal += vTotal;
-          relatorio[key].valorComissao += vComissao;
-          relatorio[key].valorBarbearia += (vTotal - vComissao);
-        });
-
-        const lista = Object.values(relatorio);
-
-        document.getElementById('resultado-fechamento').innerHTML = `
+        document.getElementById('res-fechamento').innerHTML = `
           <div class="bb-grid-wrap">
             <table class="bb-grid">
               <thead>
-                <tr>
-                  <th>Barbeiro</th>
-                  <th>Ciclo</th>
-                  <th>Atendimentos</th>
-                  <th>Faturamento Bruto</th>
-                  <th>Comissão Barbeiro (50%)</th>
-                  <th>Líquido Barbearia</th>
-                </tr>
+                <tr><th>Barbeiro</th><th>Atendimentos</th><th>Bruto</th><th>Comissão Barbeiro (50%)</th><th>Líquido Barbearia (50%)</th></tr>
               </thead>
               <tbody>
-                ${lista.map(r => `
+                ${Object.keys(rel).map(k => `
                   <tr>
-                    <td><b>${esc(r.nome)}</b></td>
-                    <td><span style="text-transform:capitalize;">${esc(r.tipoFechamento)}</span></td>
-                    <td>${r.qtdAtendimentos} clientes</td>
-                    <td>R$ ${r.faturamentoTotal.toFixed(2)}</td>
-                    <td style="color:#2563eb; font-weight:bold;">R$ ${r.valorComissao.toFixed(2)}</td>
-                    <td style="color:#16a34a; font-weight:bold;">R$ ${r.valorBarbearia.toFixed(2)}</td>
+                    <td><b>${esc(k)}</b></td>
+                    <td>${rel[k].atend} clientes</td>
+                    <td>R$ ${rel[k].bruto.toFixed(2)}</td>
+                    <td style="color:var(--dourado);">R$ ${rel[k].comissao.toFixed(2)}</td>
+                    <td style="color:#25D366;">R$ ${rel[k].liquido.toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -548,58 +403,54 @@
         `;
       };
 
-      document.getElementById('btn-filtrar-fc').onclick = calcular;
-      calcular();
+      document.getElementById('btn-fc').onclick = calc;
+      calc();
     }
 
     function renderGerenciar(){
       body.innerHTML = `
         <div class="bb-panel">
-          <h2>Adicionar Barbeiro (Somente Gestor)</h2>
+          <h2>Adicionar Barbeiro (Exclusivo Gestor)</h2>
           <div class="bb-form-row">
-            <div class="bb-field"><label>Nome</label><input type="text" id="novo-b" placeholder="Ex: DIEGO"></div>
+            <div class="bb-field"><label>Nome</label><input type="text" id="novo-b-nome" placeholder="Ex: LUCAS"></div>
             <div class="bb-field"><label>WhatsApp</label><input type="text" id="novo-b-wsp" placeholder="5561999999999"></div>
-            <div class="bb-field"><label>Fechamento</label>
-              <select id="novo-b-ciclo">
-                <option value="semanal">Semanal</option>
-                <option value="mensal">Mensal</option>
-              </select>
-            </div>
-            <button class="bb-btn primary" id="btn-add" style="height:38px; margin-top:18px;">Cadastrar Barbeiro</button>
+            <button class="bb-btn primary" id="btn-add-b" style="margin-top:18px;">Cadastrar Barbeiro</button>
+          </div>
+        </div>
+
+        <div class="bb-panel">
+          <h2>Adicionar / Alterar Preço dos Cortes</h2>
+          <div class="bb-form-row">
+            <div class="bb-field"><label>Nome do Corte</label><input type="text" id="novo-c-nome" placeholder="Ex: Freestyle"></div>
+            <div class="bb-field"><label>Preço (R$)</label><input type="number" id="novo-c-preco" placeholder="40"></div>
+            <button class="bb-btn primary" id="btn-add-c" style="margin-top:18px;">Salvar Corte/Preço</button>
           </div>
         </div>
       `;
 
-      document.getElementById('btn-add').onclick = async () => {
-        const nome = document.getElementById('novo-b').value.trim().toUpperCase();
-        const wsp = document.getElementById('novo-b-wsp').value.trim();
-        const ciclo = document.getElementById('novo-b-ciclo').value;
-
-        if(nome && wsp){
-          const novo = { nome, telefone_whatsapp: wsp, porcentagem_comissao: 50, tipo_fechamento: ciclo, ativo: true, disponivel: true };
-          barbeiros.push(novo);
-
-          if(sbClient){
-            await sbClient.from('se_barbeiros').insert([{
-              nome,
-              telefone_whatsapp: wsp,
-              porcentagem_comissao: 50,
-              tipo_fechamento: ciclo,
-              ativo: true
-            }]);
-          }
-
-          alert(`Barbeiro ${nome} cadastrado com sucesso!`);
+      document.getElementById('btn-add-b').onclick = () => {
+        const n = document.getElementById('novo-b-nome').value.toUpperCase();
+        const w = document.getElementById('novo-b-wsp').value;
+        if(n && w){
+          barbeiros.push({ id: Date.now(), nome: n, telefone_whatsapp: w, porcentagem_comissao: 50, ativo: true });
+          alert(`Barbeiro ${n} cadastrado!`);
           renderWho();
-          renderGerenciar();
-        } else {
-          alert('Preencha o nome e o WhatsApp do barbeiro!');
+        }
+      };
+
+      document.getElementById('btn-add-c').onclick = () => {
+        const n = document.getElementById('novo-c-nome').value;
+        const p = Number(document.getElementById('novo-c-preco').value);
+        if(n && p){
+          const index = cortes.findIndex(c => c.nome.toLowerCase() === n.toLowerCase());
+          if(index >= 0) cortes[index].preco = p;
+          else cortes.push({ id: Date.now(), nome: n, desc: 'Corte personalizado', preco: p });
+          alert(`Corte/Preço atualizado!`);
         }
       };
     }
 
-    async function boot(){
-      await syncSupabaseData();
+    function boot(){
       renderLogo();
       renderWho();
       renderTabs();
