@@ -122,12 +122,25 @@
     .bb-corte-card p { font-size: 12px; color: var(--texto-mutado); margin-bottom: 15px; }
     .bb-corte-card .preco { font-size: 18px; font-weight: 700; color: var(--dourado); }
 
-    /* FOOTER CS DEV */
+    .niver-banner {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px dashed var(--dourado);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      color: #FFE680;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* FOOTER CS DEV COM AJUSTE DE MARGEM PARA O NETLIFY BADGE */
     .bb-footer {
       background: #080808;
       border-top: 1px solid var(--borda);
-      padding: 20px 30px;
-      text-align: center;
+      padding: 20px 180px 20px 30px;
       font-size: 13px;
       color: var(--texto-mutado);
       display: flex;
@@ -159,6 +172,14 @@
 
     .bb-csdev-tag:hover {
       color: var(--csdev-color);
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .bb-footer {
+        padding-right: 30px;
+        padding-bottom: 70px;
+      }
     }
   </style>
 </head>
@@ -181,7 +202,7 @@
       <div>© 2026 Barbearia Danilo. Todos os direitos reservados.</div>
       <div class="bb-footer-brand">
         <span>Desenvolvido com excelência por</span>
-        <a href="https://wa.me/5561981112142?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20Barbearia%20Danilo%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20servi%C3%A7os%20da%20CS%20DEV" target="_blank" class="bb-csdev-tag">
+        <a href="https://csdevsoluces.netlify.app/#solucoes" target="_blank" class="bb-csdev-tag">
           ⚡ <span>CS DEV</span> Software Solutions
         </a>
       </div>
@@ -350,10 +371,11 @@
             <div class="bb-form-row">
               <div class="bb-field"><label>Seu Nome</label><input type="text" id="ag-nome" placeholder="Digite seu nome completo" required></div>
               <div class="bb-field"><label>WhatsApp</label><input type="tel" id="ag-fone" placeholder="(61) 99999-9999" required></div>
-              <div class="bb-field"><label>Data</label><input type="date" id="ag-data" value="${selectedDate}" required></div>
+              <div class="bb-field"><label>Data de Nascimento</label><input type="date" id="ag-nascimento" required></div>
             </div>
 
             <div class="bb-form-row">
+              <div class="bb-field"><label>Data do Agendamento</label><input type="date" id="ag-data" value="${selectedDate}" required></div>
               <div class="bb-field">
                 <label>Barbeiro Responsável</label>
                 <select id="ag-barbeiro" required>
@@ -367,29 +389,58 @@
                   ${gerarSlots().map(h => `<option value="${h}">${h}</option>`).join('')}
                 </select>
               </div>
+            </div>
+
+            <div class="bb-form-row">
               <div class="bb-field">
                 <label>Selecione o Corte</label>
                 <select id="ag-corte" required>
                   ${cortes.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} - R$ ${c.preco}</option>`).join('')}
                 </select>
               </div>
+              <div class="bb-field">
+                <label>Serviço Adicional</label>
+                <select id="ag-adicional">
+                  <option value="Somente o corte">Não (Apenas o Corte)</option>
+                  <option value="Barba Completa (+R$30)">Barba Completa (+R$30)</option>
+                  <option value="Sobrancelha (+R$15)">Sobrancelha (+R$15)</option>
+                  <option value="Freestyle / Desenho (+R$20)">Freestyle / Desenho (+R$20)</option>
+                </select>
+              </div>
             </div>
 
-            <div class="bb-field" style="margin-bottom:20px;">
-              <label>Serviço Adicional</label>
-              <select id="ag-adicional">
-                <option value="Somente o corte">Não (Apenas o Corte)</option>
-                <option value="Barba Completa (+R$30)">Barba Completa (+R$30)</option>
-                <option value="Sobrancelha (+R$15)">Sobrancelha (+R$15)</option>
-                <option value="Freestyle / Desenho (+R$20)">Freestyle / Desenho (+R$20)</option>
-              </select>
-            </div>
+            <div id="box-alerta-niver"></div>
 
             <button type="submit" class="bb-btn primary" id="btn-submit">Confirmar Agendamento</button>
           </form>
         </div>
         <div id="ag-confirmacao"></div>
       `;
+
+      const inputDataAg = document.getElementById('ag-data');
+      const inputNasc = document.getElementById('ag-nascimento');
+      const boxAlerta = document.getElementById('box-alerta-niver');
+
+      function checarAniversario(){
+        if(inputDataAg.value && inputNasc.value){
+          const [aAg, mAg, dAg] = inputDataAg.value.split('-');
+          const [aNasc, mNasc, dNasc] = inputNasc.value.split('-');
+          if(mAg === mNasc && dAg === dNasc){
+            boxAlerta.innerHTML = `
+              <div class="niver-banner">
+                🎉 <b>PARABÉNS! HOJE É SEU ANIVERSÁRIO!</b><br>
+                Seu corte de cabelo sai <b>100% GRATUITO (R$ 0,00)</b> nesta data especial!
+              </div>
+            `;
+            return true;
+          }
+        }
+        boxAlerta.innerHTML = '';
+        return false;
+      }
+
+      inputDataAg.addEventListener('change', checarAniversario);
+      inputNasc.addEventListener('change', checarAniversario);
 
       document.getElementById('form-agendar').onsubmit = async (e) => {
         e.preventDefault();
@@ -400,6 +451,7 @@
         const bNome = document.getElementById('ag-barbeiro').value;
         const hora = document.getElementById('ag-hora').value;
         const data = document.getElementById('ag-data').value;
+        const nascimento = document.getElementById('ag-nascimento').value;
         const cliente = document.getElementById('ag-nome').value;
         const fone = document.getElementById('ag-fone').value;
         const corteNome = document.getElementById('ag-corte').value;
@@ -408,14 +460,17 @@
         const barbeiroObj = barbeiros.find(b => b.nome.toUpperCase() === bNome.toUpperCase()) || barbeiros[0];
         const corteObj = cortes.find(c => c.nome.toUpperCase() === corteNome.toUpperCase()) || cortes[0];
 
+        const isNiver = checarAniversario();
+        const valorFinal = isNiver ? 0 : corteObj.preco;
+
         const novoItem = {
           cliente: cliente,
           telefone: fone,
           barbeiro: barbeiroObj.nome,
           data: data,
           hora: hora,
-          corte: corteNome,
-          valor_total: corteObj.preco,
+          corte: corteNome + (isNiver ? " (ANIVERSARIANTE - CORTESIA)" : ""),
+          valor_total: valorFinal,
           porcentagem_comissao: 50
         };
 
@@ -429,14 +484,23 @@
         }
 
         const dataFormatada = data.split('-').reverse().join('/');
-        const textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPara a data: ${dataFormatada} às ${hora}\nServiço Adicional: ${adicional}`;
+        const nascFormatada = nascimento.split('-').reverse().join('/');
         
+        let textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPara a data: ${dataFormatada} às ${hora}\nData Nasc: ${nascFormatada}\nServiço Adicional: ${adicional}`;
+        
+        if(isNiver){
+          textoMsg += `\n\n🎉 *CLIENTE ANIVERSARIANTE DO DIA! Corte GRATUITO (R$ 0,00)*`;
+        } else {
+          textoMsg += `\nValor: R$ ${valorFinal.toFixed(2)}`;
+        }
+
         const urlWspBarbeiro = `https://wa.me/${barbeiroObj.telefone_whatsapp}?text=${encodeURIComponent(textoMsg)}`;
         const urlWspGestor = `https://wa.me/${config.whatsappAdmin}?text=${encodeURIComponent("Notificação de Agendamento:\n" + textoMsg)}`;
 
         document.getElementById('ag-confirmacao').innerHTML = `
           <div class="bb-panel" style="border-left: 4px solid var(--dourado);">
             <h3 style="color:var(--dourado); margin-bottom:10px;">✔ Agendamento Salvo com Sucesso!</h3>
+            ${isNiver ? '<p style="color:#FFE680; font-weight:bold; margin-bottom:10px;">🎁 Aniversário confirmado! Parabéns pelo seu dia!</p>' : ''}
             <p style="margin-bottom:15px; font-size:14px;">Envie a confirmação direto pelo WhatsApp:</p>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
               <a href="${urlWspBarbeiro}" target="_blank" class="bb-btn wsp">📲 Notificar Barbeiro (${barbeiroObj.nome})</a>
@@ -497,7 +561,7 @@
                     <td>${esc(a.telefone)}</td>
                     <td>${esc(a.barbeiro)}</td>
                     <td>${esc(a.corte)}</td>
-                    <td>R$ ${(Number(a.valor_total) || 40).toFixed(2)}</td>
+                    <td>R$ ${(Number(a.valor_total) || 0).toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -530,7 +594,7 @@
 
         ags.forEach(a => {
           if(!rel[a.barbeiro]) rel[a.barbeiro] = { atend:0, bruto:0, comissao:0, liquido:0 };
-          const v = Number(a.valor_total) || 40;
+          const v = Number(a.valor_total) || 0;
           rel[a.barbeiro].atend += 1;
           rel[a.barbeiro].bruto += v;
           rel[a.barbeiro].comissao += (v * 0.5);
