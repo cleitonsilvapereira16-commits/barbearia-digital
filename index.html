@@ -89,19 +89,18 @@
       <div class="bb-who" id="bb-who"></div>
     </div>
     <div class="bb-tabs" id="bb-tabs"></div>
-    <div class="bb-body" id="bb-body">Carregando...</div>
+    <div class="bb-body" id="bb-body">Carregando dados...</div>
   </div>
 
   <script>
   (function(){
     "use strict";
 
-    const SUPABASE_URL = "SUA_SUPABASE_URL_AQUI"; 
-    const SUPABASE_KEY = "SUA_SUPABASE_ANON_KEY_AQUI"; 
-    let sbClient = null;
-    if(SUPABASE_URL && SUPABASE_KEY && !SUPABASE_URL.includes("SUA_SUPABASE")){
-      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+    // Conexão Supabase com suas credenciais reais
+    const SUPABASE_URL = "https://lgdngncxmlbtshclanzx.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnZG5nbmNubWxidHNoY2xhbnp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTIwNzgsImV4cCI6MjEwMjc4ODA3OH0.FSmfOpRQqeaEeRoGK1kQ-lRIyeG-DK6wp68wzB0mjcY"; 
+    
+    const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const body = document.getElementById('bb-body');
     const logoBox = document.getElementById('bb-logo');
@@ -111,9 +110,9 @@
     let config = { nomeLoja: 'Danilo Barber Shop', whatsappAdmin: '5561999999999' };
     
     let barbeiros = [
-      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true },
-      { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, tipo_fechamento:'mensal', ativo:true },
-      { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true }
+      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, ativo:true },
+      { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, ativo:true },
+      { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, ativo:true }
     ];
 
     let cortes = [
@@ -125,7 +124,7 @@
       { id:'6', nome:'Corte na Tesoura', desc:'Acabamento 100% manual na tesoura.', preco:50 }
     ];
 
-    let agendamentos = JSON.parse(localStorage.getItem('barb-agendamentos') || '[]');
+    let agendamentos = [];
     let roleMode = localStorage.getItem('barb-role') || null;
     let activeTab = 'agendar';
     let selectedDate = new Date().toISOString().slice(0,10);
@@ -144,8 +143,13 @@
       return slots;
     }
 
-    function isSlotOcupado(bNome, data, hora){
-      return agendamentos.some(a => a.barbeiro.toUpperCase() === bNome.toUpperCase() && a.data === data && a.hora === hora);
+    async function carregarAgendamentosSupabase(){
+      try {
+        const { data, error } = await sbClient.from('se_agendamentos').select('*');
+        if(!error && data){ agendamentos = data; }
+      } catch(e){
+        console.error("Erro ao buscar Supabase:", e);
+      }
     }
 
     function renderLogo(){
@@ -185,7 +189,8 @@
 
     window.setTab = (tab) => { activeTab = tab; renderTabs(); renderBody(); };
 
-    function renderBody(){
+    async function renderBody(){
+      await carregarAgendamentosSupabase();
       if(activeTab === 'cortes') renderCortes();
       else if(activeTab === 'agendamentos' && isAdmin()) renderAgendamentos();
       else if(activeTab === 'fechamento' && isAdmin()) renderFechamento();
@@ -243,7 +248,7 @@
               </select>
             </div>
 
-            <button type="submit" class="bb-btn primary">Confirmar Agendamento</button>
+            <button type="submit" class="bb-btn primary" id="btn-submit">Confirmar Agendamento</button>
           </form>
         </div>
         <div id="ag-confirmacao"></div>
@@ -251,6 +256,10 @@
 
       document.getElementById('form-agendar').onsubmit = async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+
         const bNome = document.getElementById('ag-barbeiro').value;
         const hora = document.getElementById('ag-hora').value;
         const data = document.getElementById('ag-data').value;
@@ -259,21 +268,31 @@
         const corteNome = document.getElementById('ag-corte').value;
         const adicional = document.getElementById('ag-adicional').value;
 
-        if(isSlotOcupado(bNome, data, hora)){
-          alert('Este horário já está ocupado para este barbeiro! Escolha outro.');
-          return;
-        }
-
         const barbeiroObj = barbeiros.find(b => b.nome.toUpperCase() === bNome.toUpperCase()) || barbeiros[0];
         const corteObj = cortes.find(c => c.nome.toUpperCase() === corteNome.toUpperCase()) || cortes[0];
 
-        const novo = { id: Date.now(), cliente, telefone: fone, barbeiro: barbeiroObj.nome, data, hora, corte: corteNome, valor_total: corteObj.preco, porcentagem_comissao: 50 };
-        agendamentos.push(novo);
-        localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
+        const novoItem = {
+          cliente: cliente,
+          telefone: fone,
+          barbeiro: barbeiroObj.nome,
+          data: data,
+          hora: hora,
+          corte: corteNome,
+          valor_total: corteObj.preco,
+          porcentagem_comissao: 50
+        };
 
-        // Formatação exata do script de mensagem no WhatsApp solicitada
+        // Grava no Supabase diretamente
+        const { error } = await sbClient.from('se_agendamentos').insert([novoItem]);
+
+        if (error) {
+          alert("Erro ao gravar no banco: " + error.message);
+          btn.disabled = false;
+          btn.innerText = "Confirmar Agendamento";
+          return;
+        }
+
         const dataFormatada = data.split('-').reverse().join('/');
-        
         const textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPra o dia e hora tal: ${dataFormatada} às ${hora}\nserviço adicional: ${adicional}`;
         
         const urlWspBarbeiro = `https://wa.me/${barbeiroObj.telefone_whatsapp}?text=${encodeURIComponent(textoMsg)}`;
@@ -281,14 +300,15 @@
 
         document.getElementById('ag-confirmacao').innerHTML = `
           <div class="bb-panel" style="border-left: 4px solid var(--dourado);">
-            <h3 style="color:var(--dourado); margin-bottom:10px;">✔ Agendamento Confirmado!</h3>
-            <p style="margin-bottom:15px; font-size:14px;">Envie o comprovante/aviso diretamente para o WhatsApp do profissional e do gestor:</p>
+            <h3 style="color:var(--dourado); margin-bottom:10px;">✔ Agendamento Salvo com Sucesso!</h3>
+            <p style="margin-bottom:15px; font-size:14px;">Envie o comprovante diretamente pelo WhatsApp:</p>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
               <a href="${urlWspBarbeiro}" target="_blank" class="bb-btn wsp">📲 Notificar Barbeiro (${barbeiroObj.nome})</a>
               <a href="${urlWspGestor}" target="_blank" class="bb-btn wsp" style="background:#333;">👑 Notificar Gestor (Danilo)</a>
             </div>
           </div>
         `;
+        btn.innerText = "Confirmado!";
       };
     }
 
@@ -327,7 +347,7 @@
     function renderAgendamentos(){
       body.innerHTML = `
         <div class="bb-panel">
-          <h2>Agendamentos Cadastrados</h2>
+          <h2>Agendamentos Salvos no Banco (Supabase)</h2>
           <div class="bb-grid-wrap">
             <table class="bb-grid">
               <thead>
@@ -341,7 +361,7 @@
                     <td>${esc(a.telefone)}</td>
                     <td>${esc(a.barbeiro)}</td>
                     <td>${esc(a.corte)}</td>
-                    <td>R$ ${(a.valor_total || 40).toFixed(2)}</td>
+                    <td>R$ ${(Number(a.valor_total) || 40).toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -374,7 +394,7 @@
 
         ags.forEach(a => {
           if(!rel[a.barbeiro]) rel[a.barbeiro] = { atend:0, bruto:0, comissao:0, liquido:0 };
-          const v = a.valor_total || 40;
+          const v = Number(a.valor_total) || 40;
           rel[a.barbeiro].atend += 1;
           rel[a.barbeiro].bruto += v;
           rel[a.barbeiro].comissao += (v * 0.5);
