@@ -79,10 +79,11 @@
   (function(){
     "use strict";
 
-    const SUPABASE_URL = ""; 
-    const SUPABASE_KEY = ""; 
+    // Insira suas credenciais do Supabase aqui
+    const SUPABASE_URL = "SUA_SUPABASE_URL_AQUI"; 
+    const SUPABASE_KEY = "SUA_SUPABASE_ANON_KEY_AQUI"; 
     let sbClient = null;
-    if(SUPABASE_URL && SUPABASE_KEY && window.supabase){
+    if(SUPABASE_URL && SUPABASE_KEY && window.supabase && !SUPABASE_URL.includes("SUA_SUPABASE")){
       sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
@@ -93,20 +94,76 @@
 
     let config = { nomeLoja:'Barbearia do Danilo', whatsappAdmin:'5561999999999' };
     let barbeiros = [
-      { nome:'DANILO', ativo:true, disponivel:true },
-      { nome:'MAXSUELL', ativo:true, disponivel:true },
-      { nome:'DIEGO', ativo:true, disponivel:true }
+      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true, disponivel:true },
+      { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, tipo_fechamento:'mensal', ativo:true, disponivel:true },
+      { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, tipo_fechamento:'semanal', ativo:true, disponivel:true }
     ];
     let cortes = [
-      { nome:'Taper Fade', desc:'Transição suave nas laterais.', preco:35 },
-      { nome:'Degradê', desc:'Corte tradicional com degradê.', preco:35 },
-      { nome:'Na Zero', desc:'Raspado bem rente.', preco:30 }
+      { id:'1', nome:'Taper Fade', desc:'Transição suave nas laterais.', preco:35 },
+      { id:'2', nome:'Degradê', desc:'Corte tradicional com degradê.', preco:35 },
+      { id:'3', nome:'Na Zero', desc:'Raspado bem rente.', preco:30 }
     ];
     let agendamentos = JSON.parse(localStorage.getItem('barb-agendamentos') || '[]');
     let meuNome = localStorage.getItem('barb-meu-nome') || null;
     let roleMode = localStorage.getItem('barb-role') || null;
     let activeTab = 'painel';
     let selectedDate = new Date().toISOString().slice(0,10);
+
+    async function syncSupabaseData(){
+      if(!sbClient) return;
+      try {
+        const { data: cfg } = await sbClient.from('se_configuracoes').select('*').limit(1).single();
+        if(cfg){
+          config.nomeLoja = cfg.nome_barbearia || config.nomeLoja;
+          config.whatsappAdmin = cfg.whatsapp_gestor || config.whatsappAdmin;
+        }
+
+        const { data: barb } = await sbClient.from('se_barbeiros').select('*').eq('ativo', true);
+        if(barb && barb.length > 0){
+          barbeiros = barb.map(b => ({
+            id: b.id,
+            nome: b.nome,
+            telefone_whatsapp: b.telefone_whatsapp,
+            porcentagem_comissao: Number(b.porcentagem_comissao || 50),
+            tipo_fechamento: b.tipo_fechamento || 'semanal',
+            ativo: b.ativo,
+            disponivel: true
+          }));
+        }
+
+        const { data: serv } = await sbClient.from('se_servicos').select('*');
+        if(serv && serv.length > 0){
+          cortes = serv.map(s => ({
+            id: s.id,
+            nome: s.nome,
+            desc: s.descricao || 'Serviço profissional',
+            preco: Number(s.preco)
+          }));
+        }
+
+        const { data: ags } = await sbClient.from('se_agendamentos').select('*, se_barbeiros(nome), se_servicos(nome)');
+        if(ags){
+          agendamentos = ags.map(a => {
+            const dt = new Date(a.data_horario);
+            return {
+              id: a.id,
+              cliente: a.cliente_nome,
+              telefone: a.cliente_whatsapp,
+              barbeiro_id: a.barbeiro_id,
+              barbeiro: a.se_barbeiros?.nome || 'Desconhecido',
+              data: dt.toISOString().slice(0,10),
+              hora: dt.toTimeString().slice(0,5),
+              corte: a.se_servicos?.nome || 'Corte',
+              valor_total: Number(a.valor_total),
+              porcentagem_comissao: Number(a.porcentagem_comissao_aplicada || 50)
+            };
+          });
+          localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
+        }
+      } catch(err) {
+        console.warn("Usando fallback local temporário:", err);
+      }
+    }
 
     function isAdmin(){ return roleMode === 'gestor'; }
     function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -123,7 +180,7 @@
     }
 
     function isSlotOcupado(bNome, data, hora){
-      return agendamentos.some(a => a.barbeiro === bNome && a.data === data && a.hora === hora);
+      return agendamentos.some(a => a.barbeiro.toUpperCase() === bNome.toUpperCase() && a.data === data && a.hora === hora);
     }
 
     function renderLogo(){
@@ -166,7 +223,7 @@
     function renderTabs(){
       const tabs = [{k:'painel', label:'Painel'}, {k:'agendar', label:'Agendar Corte'}, {k:'cortes', label:'Consultar Cortes'}];
       if(isAdmin()) {
-        tabs.push({k:'agendamentos', label:'Agendamentos'}, {k:'gerenciar', label:'Gerenciar'});
+        tabs.push({k:'agendamentos', label:'Agendamentos'}, {k:'fechamento', label:'Fechamento & Comissões'}, {k:'gerenciar', label:'Gerenciar'});
       }
       tabsBox.innerHTML = tabs.map(t => `<div class="bb-tab ${activeTab===t.k?'active':''}" onclick="window.setTab('${t.k}')">${t.label}</div>`).join('');
     }
@@ -180,6 +237,8 @@
         renderCortes();
       } else if(activeTab === 'agendamentos' && isAdmin()) {
         renderAgendamentos();
+      } else if(activeTab === 'fechamento' && isAdmin()) {
+        renderFechamento();
       } else if(activeTab === 'gerenciar' && isAdmin()) {
         renderGerenciar();
       } else {
@@ -297,30 +356,65 @@
         const data = document.getElementById('ag-data').value;
         const cliente = document.getElementById('ag-nome').value;
         const fone = document.getElementById('ag-fone').value;
-        const corte = document.getElementById('ag-corte').value;
+        const corteNome = document.getElementById('ag-corte').value;
 
         if(isSlotOcupado(bNome, data, hora)){
           alert('Este horário já está ocupado para este barbeiro! Escolha outro horário.');
           return;
         }
 
-        const novo = { id: Date.now(), cliente, telefone: fone, barbeiro: bNome, data, hora, corte };
-        agendamentos.push(novo);
+        const barbeiroObj = barbeiros.find(b => b.nome.toUpperCase() === bNome.toUpperCase()) || barbeiros[0];
+        const corteObj = cortes.find(c => c.nome.toUpperCase() === corteNome.toUpperCase()) || cortes[0];
+
+        const valorTotal = corteObj ? corteObj.preco : 35;
+        const comissaoPct = barbeiroObj ? barbeiroObj.porcentagem_comissao : 50;
+
+        const novoLocal = { 
+          id: Date.now(), 
+          cliente, 
+          telefone: fone, 
+          barbeiro: barbeiroObj.nome, 
+          data, 
+          hora, 
+          corte: corteNome,
+          valor_total: valorTotal,
+          porcentagem_comissao: comissaoPct
+        };
+        agendamentos.push(novoLocal);
         localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
 
         if(sbClient){
-          await sbClient.from('agendamentos').insert([novo]);
+          const dataHorarioIso = new Date(`${data}T${hora}:00`).toISOString();
+          await sbClient.from('se_agendamentos').insert([{
+            cliente_nome: cliente,
+            cliente_whatsapp: fone,
+            barbeiro_id: barbeiroObj.id,
+            servico_id: corteObj.id,
+            data_horario: dataHorarioIso,
+            valor_total: valorTotal,
+            porcentagem_comissao_aplicada: comissaoPct,
+            status: 'agendado'
+          }]);
         }
 
-        const msgWsp = encodeURIComponent(`Olá! Gostaria de confirmar meu agendamento:\n\n👤 *Cliente:* ${cliente}\n💈 *Barbeiro:* ${bNome}\n📅 *Data/Hora:* ${data} às ${hora}\n✂️ *Serviço:* ${corte}\n\n⚠️ *Nota:* Ciente da tolerância de 5 minutos de atraso.`);
-        const urlWsp = `https://wa.me/${config.whatsappAdmin}?text=${msgWsp}`;
+        // WhatsApp do Barbeiro Selecionado
+        const numBarbeiro = barbeiroObj.telefone_whatsapp || config.whatsappAdmin;
+        const msgBarbeiro = encodeURIComponent(`💈 *Novo Agendamento!*\n\n👤 *Cliente:* ${cliente}\n✂️ *Serviço:* ${corteNome}\n📅 *Data/Hora:* ${data} às ${hora}\n💰 *Valor:* R$ ${valorTotal.toFixed(2)}`);
+        const urlWspBarbeiro = `https://wa.me/${numBarbeiro}?text=${msgBarbeiro}`;
+
+        // WhatsApp Central do Gestor (Danilo)
+        const msgGestor = encodeURIComponent(`🔔 *Aviso Gestor - Novo Agendamento*\n\n💈 *Barbeiro:* ${barbeiroObj.nome}\n👤 *Cliente:* ${cliente} (${fone})\n✂️ *Serviço:* ${corteNome}\n📅 *Data/Hora:* ${data} às ${hora}\n💰 *Valor:* R$ ${valorTotal.toFixed(2)}`);
+        const urlWspGestor = `https://wa.me/${config.whatsappAdmin}?text=${msgGestor}`;
 
         document.getElementById('ag-confirmacao').innerHTML = `
           <div class="bb-panel" style="border-left:5px solid #22c55e;">
             <h3 style="color:#15803d; margin:0 0 8px;">✔ Agendamento Reservado!</h3>
-            <p style="margin:0 0 10px;">Horário reservado para <b>${cliente}</b> com <b>${bNome}</b> no dia <b>${data} às ${hora}</b>.<br>
+            <p style="margin:0 0 10px;">Horário reservado para <b>${cliente}</b> com <b>${barbeiroObj.nome}</b> no dia <b>${data} às ${hora}</b>.<br>
             <span style="color:#92400e; font-size:12px;">⚠️ Tolerância máxima de atraso: 5 minutos.</span></p>
-            <a href="${urlWsp}" target="_blank" class="bb-btn wsp">📲 Enviar Confirmação via WhatsApp</a>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <a href="${urlWspBarbeiro}" target="_blank" class="bb-btn wsp">📲 Notificar Barbeiro (${barbeiroObj.nome})</a>
+              <a href="${urlWspGestor}" target="_blank" class="bb-btn wsp" style="background:#1e293b;">👑 Notificar Gestor (Danilo)</a>
+            </div>
           </div>
         `;
       };
@@ -347,7 +441,7 @@
           <h2>Todos os Agendamentos</h2>
           <table class="bb-grid">
             <thead>
-              <tr><th>Data/Hora</th><th>Cliente</th><th>Telefone</th><th>Barbeiro</th><th>Corte</th></tr>
+              <tr><th>Data/Hora</th><th>Cliente</th><th>Telefone</th><th>Barbeiro</th><th>Corte</th><th>Valor</th></tr>
             </thead>
             <tbody>
               ${agendamentos.map(a => `
@@ -357,6 +451,7 @@
                   <td>${esc(a.telefone || '-')}</td>
                   <td>${esc(a.barbeiro)}</td>
                   <td>${esc(a.corte)}</td>
+                  <td>R$ ${(a.valor_total || 35).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -365,28 +460,146 @@
       `;
     }
 
+    function renderFechamento(){
+      body.innerHTML = `
+        <div class="bb-panel">
+          <h2>📊 Controle de Fechamento & Comissões</h2>
+          <div class="bb-form-row" style="align-items:flex-end;">
+            <div class="bb-field"><label>Data Início</label><input type="date" id="fc-inicio" value="${selectedDate}"></div>
+            <div class="bb-field"><label>Data Fim</label><input type="date" id="fc-fim" value="${selectedDate}"></div>
+            <button class="bb-btn primary" id="btn-filtrar-fc">Calcular Fechamento</button>
+          </div>
+          <div id="resultado-fechamento" style="margin-top:20px;"></div>
+        </div>
+      `;
+
+      const calcular = () => {
+        const dtInicio = document.getElementById('fc-inicio').value;
+        const dtFim = document.getElementById('fc-fim').value;
+
+        const agsFiltrados = agendamentos.filter(a => a.data >= dtInicio && a.data <= dtFim);
+        const relatorio = {};
+
+        barbeiros.forEach(b => {
+          relatorio[b.nome.toUpperCase()] = {
+            nome: b.nome,
+            tipoFechamento: b.tipo_fechamento || 'semanal',
+            comissaoPct: b.porcentagem_comissao || 50,
+            qtdAtendimentos: 0,
+            faturamentoTotal: 0,
+            valorComissao: 0,
+            valorBarbearia: 0
+          };
+        });
+
+        agsFiltrados.forEach(a => {
+          const key = a.barbeiro.toUpperCase();
+          if(!relatorio[key]){
+            relatorio[key] = {
+              nome: a.barbeiro,
+              tipoFechamento: 'semanal',
+              comissaoPct: a.porcentagem_comissao || 50,
+              qtdAtendimentos: 0,
+              faturamentoTotal: 0,
+              valorComissao: 0,
+              valorBarbearia: 0
+            };
+          }
+
+          const vTotal = Number(a.valor_total || 35);
+          const pct = Number(a.porcentagem_comissao || 50) / 100;
+          const vComissao = vTotal * pct;
+
+          relatorio[key].qtdAtendimentos += 1;
+          relatorio[key].faturamentoTotal += vTotal;
+          relatorio[key].valorComissao += vComissao;
+          relatorio[key].valorBarbearia += (vTotal - vComissao);
+        });
+
+        const lista = Object.values(relatorio);
+
+        document.getElementById('resultado-fechamento').innerHTML = `
+          <div class="bb-grid-wrap">
+            <table class="bb-grid">
+              <thead>
+                <tr>
+                  <th>Barbeiro</th>
+                  <th>Ciclo</th>
+                  <th>Atendimentos</th>
+                  <th>Faturamento Bruto</th>
+                  <th>Comissão Barbeiro (50%)</th>
+                  <th>Líquido Barbearia</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${lista.map(r => `
+                  <tr>
+                    <td><b>${esc(r.nome)}</b></td>
+                    <td><span style="text-transform:capitalize;">${esc(r.tipoFechamento)}</span></td>
+                    <td>${r.qtdAtendimentos} clientes</td>
+                    <td>R$ ${r.faturamentoTotal.toFixed(2)}</td>
+                    <td style="color:#2563eb; font-weight:bold;">R$ ${r.valorComissao.toFixed(2)}</td>
+                    <td style="color:#16a34a; font-weight:bold;">R$ ${r.valorBarbearia.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      };
+
+      document.getElementById('btn-filtrar-fc').onclick = calcular;
+      calcular();
+    }
+
     function renderGerenciar(){
       body.innerHTML = `
         <div class="bb-panel">
           <h2>Adicionar Barbeiro (Somente Gestor)</h2>
           <div class="bb-form-row">
-            <div class="bb-field"><input type="text" id="novo-b" placeholder="Nome do Barbeiro"></div>
-            <button class="bb-btn primary" id="btn-add">Cadastrar</button>
+            <div class="bb-field"><label>Nome</label><input type="text" id="novo-b" placeholder="Ex: DIEGO"></div>
+            <div class="bb-field"><label>WhatsApp</label><input type="text" id="novo-b-wsp" placeholder="5561999999999"></div>
+            <div class="bb-field"><label>Fechamento</label>
+              <select id="novo-b-ciclo">
+                <option value="semanal">Semanal</option>
+                <option value="mensal">Mensal</option>
+              </select>
+            </div>
+            <button class="bb-btn primary" id="btn-add" style="height:38px; margin-top:18px;">Cadastrar Barbeiro</button>
           </div>
         </div>
       `;
-      document.getElementById('btn-add').onclick = () => {
+
+      document.getElementById('btn-add').onclick = async () => {
         const nome = document.getElementById('novo-b').value.trim().toUpperCase();
-        if(nome){
-          barbeiros.push({ nome, ativo:true, disponivel:true });
-          alert(`Barbeiro ${nome} adicionado!`);
+        const wsp = document.getElementById('novo-b-wsp').value.trim();
+        const ciclo = document.getElementById('novo-b-ciclo').value;
+
+        if(nome && wsp){
+          const novo = { nome, telefone_whatsapp: wsp, porcentagem_comissao: 50, tipo_fechamento: ciclo, ativo: true, disponivel: true };
+          barbeiros.push(novo);
+
+          if(sbClient){
+            await sbClient.from('se_barbeiros').insert([{
+              nome,
+              telefone_whatsapp: wsp,
+              porcentagem_comissao: 50,
+              tipo_fechamento: ciclo,
+              ativo: true
+            }]);
+          }
+
+          alert(`Barbeiro ${nome} cadastrado com sucesso!`);
           renderWho();
           renderGerenciar();
+        } else {
+          alert('Preencha o nome e o WhatsApp do barbeiro!');
         }
       };
     }
 
-    function boot(){
+    async function boot(){
+      await syncSupabaseData();
       renderLogo();
       renderWho();
       renderTabs();
