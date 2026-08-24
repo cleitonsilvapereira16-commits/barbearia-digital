@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbearia Digital</title>
+  <style>
+    :root{
+      --preto:#141414; --preto-2:#232323;
+      --branco:#FFFFFF;
+      --cinza-050:#FAFAFA; --cinza-100:#F1F1F1; --cinza-200:#E4E4E4; --cinza-300:#D2D2D2;
+      --cinza-400:#B3B3B3; --cinza-600:#7A7A7A; --cinza-800:#333333;
+      --serif: ui-serif, Georgia, "Times New Roman", serif;
+      --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #bb-root{
+      min-height:100vh; color:var(--preto); font-family:var(--sans);
+      background-color:var(--cinza-050);
+      background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.018) 0px, rgba(0,0,0,.018) 1px, transparent 1px, transparent 10px);
+    }
+    #bb-root *{ box-sizing:border-box; }
+    .bb-top{
+      position:relative; background:var(--preto); color:var(--branco); padding:22px 26px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    }
+    .bb-brand{ display:flex; align-items:center; gap:16px; }
+    .bb-badge-name{ font-family:var(--serif); font-size:22px; letter-spacing:.05em; font-weight:700; margin:0; }
+    .bb-badge-sub{ font-family:var(--serif); font-size:10px; letter-spacing:.32em; color:var(--cinza-400); text-transform:uppercase; margin-top:2px; }
+    .bb-who{ display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--cinza-300); }
+    .bb-who select{ background:var(--preto-2); color:var(--branco); border:1px solid #3a3a3a; border-radius:7px; padding:7px 10px; font-size:12.5px; }
+    .bb-pill-dono{ background:var(--branco); color:var(--preto); font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; }
+    .bb-exit{ background:none; border:1px solid #3a3a3a; color:var(--cinza-300); border-radius:7px; padding:6px 9px; font-size:11px; cursor:pointer; }
+    .bb-tabs{ background:var(--branco); border-bottom:1px solid var(--cinza-200); padding:0 26px; display:flex; gap:4px; overflow-x:auto; }
+    .bb-tab{ padding:14px 18px; font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--cinza-600); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; }
+    .bb-tab.active{ color:var(--preto); border-bottom-color:var(--preto); }
+    .bb-body{ padding:26px; max-width:1180px; margin:0 auto; }
+    .bb-hero{ text-align:center; padding:26px 10px 22px; }
+    .bb-hero h1{ font-family:var(--serif); font-size:30px; margin:6px 0 4px; }
+    .bb-section-title{ display:flex; align-items:center; gap:9px; font-family:var(--serif); font-size:15px; font-weight:700; margin:26px 0 12px; color:var(--preto); }
+    .bb-section-title::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--cinza-300), transparent); }
+    .bb-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-bottom:22px; }
+    .bb-card{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:18px 16px; position:relative; }
+    .bb-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px; background:repeating-linear-gradient(-45deg, var(--preto) 0 6px, var(--branco) 6px 12px); }
+    .bb-avatar{ width:46px; height:46px; border-radius:50%; background:var(--preto); color:var(--branco); display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .bb-status{ display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
+    .bb-status.disponivel{ background:var(--branco); border:1.5px solid var(--preto); color:var(--preto); }
+    .bb-status.ocupado{ background:var(--cinza-300); color:var(--preto-2); }
+    .bb-panel{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:24px; margin-bottom:18px; position:relative; }
+    .bb-panel::before{ content:""; position:absolute; top:0; left:0; right:0; height:4px; background:repeating-linear-gradient(-45deg, var(--preto) 0 6px, var(--branco) 6px 12px); }
+    .bb-form-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px; }
+    .bb-field{ display:flex; flex-direction:column; gap:5px; }
+    .bb-field label{ font-size:11.5px; font-weight:700; color:var(--cinza-600); }
+    .bb-field input, .bb-field select{ border:1px solid var(--cinza-300); border-radius:8px; padding:8px 10px; font-size:13.5px; width:100%; }
+    .bb-btn{ border:none; border-radius:9px; padding:10px 18px; font-size:12.5px; font-weight:800; cursor:pointer; }
+    .bb-btn.primary{ background:var(--preto); color:var(--branco); }
+    .bb-btn.ghost{ background:var(--branco); border:1px solid var(--cinza-300); color:var(--preto); }
+    .bb-grid-wrap{ overflow-x:auto; border:1px solid var(--cinza-200); border-radius:14px; background:var(--branco); }
+    table.bb-grid{ border-collapse:collapse; width:100%; font-size:12.5px; }
+    table.bb-grid th{ background:var(--preto); color:var(--branco); padding:12px 8px; }
+    table.bb-grid td{ border-bottom:1px solid var(--cinza-100); border-right:1px solid var(--cinza-100); padding:8px; text-align:center; }
+    .bb-slot{ width:100%; padding:8px 4px; font-size:11px; font-weight:800; text-transform:uppercase; border-radius:4px; }
+    .bb-slot.livre{ background:var(--branco); color:var(--cinza-400); }
+    .bb-slot.ocupado{ background:var(--cinza-300); color:var(--preto-2); }
+    .bb-cortes-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+    .bb-corte-card{ background:var(--branco); border:1px solid var(--cinza-200); border-radius:14px; padding:18px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div id="bb-root">
+    <div class="bb-top">
+      <div class="bb-brand" id="bb-logo"></div>
+      <div class="bb-who" id="bb-who"></div>
+    </div>
+    <div class="bb-tabs" id="bb-tabs"></div>
+    <div class="bb-body" id="bb-body">Carregando…</div>
+  </div>
+
+  <script>
+  (function(){
+    "use strict";
+    const body = document.getElementById('bb-body');
+    const logoBox = document.getElementById('bb-logo');
+    const whoBox = document.getElementById('bb-who');
+    const tabsBox = document.getElementById('bb-tabs');
+
+    let config = { nomeLoja:'Barbearia do Danilo', abertura:'09:00', fechamento:'19:00', slotMin:30, statusLoja:'aberto', cadeiras:3, cadeirasEmUso:0 };
+    let barbeiros = [
+      { nome:'DANILO', ativo:true, disponivel:true, fila:0 },
+      { nome:'MAXSUELL', ativo:true, disponivel:true, fila:0 },
+      { nome:'DIEGO', ativo:true, disponivel:true, fila:0 }
+    ];
+    let cortes = [
+      { nome:'Taper Fade', desc:'Transição suave nas laterais.', preco:35 },
+      { nome:'Degradê', desc:'Corte tradicional com degradê.', preco:35 },
+      { nome:'Na Zero', desc:'Raspado bem rente.', preco:30 }
+    ];
+    let agenda = {};
+    let agendamentos = JSON.parse(localStorage.getItem('barb-agendamentos') || '[]');
+    let meuNome = localStorage.getItem('barb-meu-nome') || null;
+    let roleMode = localStorage.getItem('barb-role') || null;
+    let activeTab = 'painel';
+    let selectedDate = new Date().toISOString().slice(0,10);
+
+    function isAdmin(){ return roleMode === 'gestor' || roleMode === 'dono'; }
+    function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function gerarSlots(){
+      const slots = [];
+      let cur = 9*60; const fim = 19*60;
+      while(cur < fim){
+        const hh = Math.floor(cur/60), mm = cur%60;
+        slots.push(`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
+        cur += 30;
+      }
+      return slots;
+    }
+
+    function slotStatus(nome, dateISO, hhmm){
+      return (agenda[dateISO] && agenda[dateISO][nome] && agenda[dateISO][nome][hhmm]) || 'livre';
+    }
+
+    function setSlotStatus(nome, dateISO, hhmm, status){
+      if(!agenda[dateISO]) agenda[dateISO] = {};
+      if(!agenda[dateISO][nome]) agenda[dateISO][nome] = {};
+      agenda[dateISO][nome][hhmm] = status;
+    }
+
+    function renderLogo(){
+      logoBox.innerHTML = `<div><div class="bb-badge-name">${esc(config.nomeLoja)}</div><div class="bb-badge-sub">BARBER & GROOMING</div></div>`;
+    }
+
+    function renderWho(){
+      whoBox.innerHTML = `
+        ${roleMode ? `<span class="bb-pill-dono">${esc(roleMode)}</span>` : ''}
+        <select id="bb-select">
+          <option value="">Cliente / Visitante</option>
+          ${barbeiros.map(b => `<option value="${esc(b.nome)}" ${meuNome===b.nome?'selected':''}>${esc(b.nome)}</option>`).join('')}
+          <option value="__gestor" ${roleMode==='gestor'?'selected':''}>🔒 Gestor</option>
+        </select>
+      `;
+      document.getElementById('bb-select').onchange = (e) => {
+        const val = e.target.value;
+       if(val === '__gestor'){
+  const pin = prompt('Digite a senha de Gestor:');
+  if(pin === '9871'){ roleMode = 'gestor'; meuNome = null; }
+  else { alert('Senha incorreta!'); return; }
+}
+        } else if(val) {
+          roleMode = 'colaborador'; meuNome = val;
+        } else {
+          roleMode = null; meuNome = null;
+        }
+        localStorage.setItem('barb-role', roleMode || '');
+        localStorage.setItem('barb-meu-nome', meuNome || '');
+        boot();
+      };
+    }
+
+    function renderTabs(){
+      const tabs = [{k:'painel', label:'Painel'}, {k:'agendar', label:'Agendar Corte'}, {k:'cortes', label:'Consultar Cortes'}];
+      if(isAdmin()) tabs.push({k:'agendamentos', label:'Agendamentos'}, {k:'gerenciar', label:'Gerenciar'});
+      tabsBox.innerHTML = tabs.map(t => `<div class="bb-tab ${activeTab===t.k?'active':''}" onclick="window.setTab('${t.k}')">${t.label}</div>`).join('');
+    }
+
+    window.setTab = (tab) => { activeTab = tab; renderTabs(); renderBody(); };
+
+    function renderBody(){
+      if(activeTab === 'agendar') renderAgendar();
+      else if(activeTab === 'cortes') renderCortes();
+      else if(activeTab === 'agendamentos' && isAdmin()) renderAgendamentos();
+      else if(activeTab === 'gerenciar' && isAdmin()) renderGerenciar();
+      else renderPainel();
+    }
+
+    function renderPainel(){
+      const slots = gerarSlots();
+      const ativos = barbeiros.filter(b => b.ativo);
+
+      body.innerHTML = `
+        <div class="bb-hero">
+          <h1>${esc(config.nomeLoja)}</h1>
+          <p>Selecione seu barbeiro e faça seu agendamento online</p>
+        </div>
+
+        <div class="bb-section-title">Barbeiros da Equipe</div>
+        <div class="bb-cards">
+          ${ativos.map(b => `
+            <div class="bb-card">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="bb-avatar">${b.nome[0]}</div>
+                <div>
+                  <b>${esc(b.nome)}</b><br>
+                  <span class="bb-status ${b.disponivel?'disponivel':'ocupado'}">${b.disponivel?'Disponível':'Ocupado'}</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="bb-section-title">Agenda do Dia</div>
+        <div class="bb-grid-wrap">
+          <table class="bb-grid">
+            <thead>
+              <tr><th>Horário</th>${ativos.map(b => `<th>${esc(b.nome)}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${slots.map(hhmm => `
+                <tr>
+                  <td><b>${hhmm}</b></td>
+                  ${ativos.map(b => {
+                    const st = slotStatus(b.nome, selectedDate, hhmm);
+                    return `<td><div class="bb-slot ${st}">${st}</div></td>`;
+                  }).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderAgendar(){
+      const ativos = barbeiros.filter(b => b.ativo);
+
+      body.innerHTML = `
+        <div class="bb-panel">
+          <h2>Agendar Horário</h2>
+          <form id="form-agendar">
+            <div class="bb-form-row">
+              <div class="bb-field"><label>Seu Nome</label><input type="text" id="ag-nome" required></div>
+              <div class="bb-field"><label>Telefone/WhatsApp</label><input type="tel" id="ag-fone" required></div>
+              <div class="bb-field"><label>Data</label><input type="date" id="ag-data" value="${selectedDate}" required></div>
+            </div>
+
+            <div class="bb-form-row">
+              <div class="bb-field">
+                <label>Barbeiro</label>
+                <select id="ag-barbeiro" required>
+                  <option value="">Selecione...</option>
+                  ${ativos.map(b => `<option value="${esc(b.nome)}">${esc(b.nome)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="bb-field">
+                <label>Horário</label>
+                <select id="ag-hora" required>
+                  ${gerarSlots().map(h => `<option value="${h}">${h}</option>`).join('')}
+                </select>
+              </div>
+              <div class="bb-field">
+                <label>Corte</label>
+                <select id="ag-corte" required>
+                  ${cortes.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} - R$ ${c.preco}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+
+            <div class="bb-field" style="margin-bottom:14px;">
+              <label>Adicionais</label>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <label><input type="checkbox" name="add" value="Barba"> Barba (+R$20)</label>
+                <label><input type="checkbox" name="add" value="Bigode"> Bigode (+R$10)</label>
+                <label><input type="checkbox" name="add" value="Sobrancelha"> Sobrancelha (+R$12)</label>
+              </div>
+            </div>
+
+            <div class="bb-field" style="margin-bottom:14px;">
+              <label>Outros Adicionais</label>
+              <input type="text" id="ag-outros" placeholder="Ex: Lavagem especial">
+            </div>
+
+            <button type="submit" class="bb-btn primary">Confirmar Agendamento</button>
+          </form>
+        </div>
+        <div id="ag-confirmacao"></div>
+      `;
+
+      document.getElementById('form-agendar').onsubmit = (e) => {
+        e.preventDefault();
+        const bNome = document.getElementById('ag-barbeiro').value;
+        const hora = document.getElementById('ag-hora').value;
+        const data = document.getElementById('ag-data').value;
+        const cliente = document.getElementById('ag-nome').value;
+
+        const novo = { id: Date.now(), cliente, barbeiro: bNome, data, hora, corte: document.getElementById('ag-corte').value };
+        agendamentos.push(novo);
+        localStorage.setItem('barb-agendamentos', JSON.stringify(agendamentos));
+        setSlotStatus(bNome, data, hora, 'ocupado');
+
+        console.log(`[NOTIFICAÇÃO DISPARADA PUSH/WHATSAPP] Para Gestor e Barbeiro (${bNome}): Novo agendamento de ${cliente} às ${hora}.`);
+
+        document.getElementById('ag-confirmacao').innerHTML = `
+          <div class="bb-panel" style="border-left:5px solid #22c55e;">
+            <h3 style="color:#15803d; margin:0 0 8px;">✔ Agendamento Salvo!</h3>
+            <p style="margin:0;">Horário confirmado para <b>${cliente}</b> com <b>${bNome}</b> às <b>${hora}</b>.<br>
+            <span style="color:#92400e; font-size:12px;">⚠️ Tolerância máxima de atraso: 5 minutos.</span></p>
+          </div>
+        `;
+      };
+    }
+
+    function renderCortes(){
+      body.innerHTML = `
+        <div class="bb-section-title">Exemplos de Cortes</div>
+        <div class="bb-cortes-grid">
+          ${cortes.map(c => `
+            <div class="bb-corte-card">
+              <h3>${esc(c.nome)}</h3>
+              <p>${esc(c.desc)}</p>
+              <b>R$ ${c.preco}</b>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderAgendamentos(){
+      body.innerHTML = `
+        <div class="bb-panel">
+          <h2>Todos os Agendamentos</h2>
+          <table class="bb-grid">
+            <thead>
+              <tr><th>Data/Hora</th><th>Cliente</th><th>Barbeiro</th><th>Corte</th></tr>
+            </thead>
+            <tbody>
+              ${agendamentos.map(a => `
+                <tr>
+                  <td>${a.data} ${a.hora}</td>
+                  <td>${esc(a.cliente)}</td>
+                  <td>${esc(a.barbeiro)}</td>
+                  <td>${esc(a.corte)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderGerenciar(){
+      body.innerHTML = `
+        <div class="bb-panel">
+          <h2>Adicionar Barbeiro (Somente Gestor)</h2>
+          <div class="bb-form-row">
+            <div class="bb-field"><input type="text" id="novo-b" placeholder="Nome do Barbeiro"></div>
+            <button class="bb-btn primary" id="btn-add">Cadastrar</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('btn-add').onclick = () => {
+        const nome = document.getElementById('novo-b').value.trim().toUpperCase();
+        if(nome){
+          barbeiros.push({ nome, ativo:true, disponivel:true, fila:0 });
+          alert(`Barbeiro ${nome} adicionado!`);
+          renderWho();
+          renderGerenciar();
+        }
+      };
+    }
+
+    function boot(){
+      renderLogo();
+      renderWho();
+      renderTabs();
+      renderBody();
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
