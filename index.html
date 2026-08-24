@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barbearia Premium</title>
+  <title>Barbearia Danilo</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -16,6 +16,7 @@
       --texto-mutado: #A3A3A3;
       --borda: #333333;
       --verde-wsp: #25D366;
+      --insta-color: #E1306C;
       --serif: ui-serif, Georgia, "Times New Roman", serif;
       --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
@@ -33,7 +34,7 @@
     .bb-top {
       background: #0A0A0A;
       border-bottom: 1px solid var(--borda);
-      padding: 20px 30px;
+      padding: 15px 30px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -41,8 +42,46 @@
       gap: 15px;
     }
 
+    .bb-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .bb-logo-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2px solid var(--dourado);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+      object-fit: cover;
+      background: #88c0b7;
+    }
+
     .bb-badge-name { font-family: var(--serif); font-size: 24px; color: var(--dourado); font-weight: 700; letter-spacing: 1px; }
-    .bb-badge-sub { font-size: 10px; letter-spacing: 4px; color: var(--texto-mutado); text-transform: uppercase; margin-top: 2px; }
+    .bb-badge-sub { font-size: 11px; letter-spacing: 3px; color: var(--texto-mutado); text-transform: uppercase; margin-top: 2px; }
+
+    .bb-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .bb-insta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    .bb-insta-btn:hover { opacity: 0.9; transform: scale(1.03); }
 
     .bb-who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
     .bb-who select { background: var(--bg-input); color: var(--texto-claro); border: 1px solid var(--borda); border-radius: 6px; padding: 8px 12px; }
@@ -86,7 +125,12 @@
   <div id="bb-root">
     <div class="bb-top">
       <div id="bb-logo"></div>
-      <div class="bb-who" id="bb-who"></div>
+      <div class="bb-top-actions">
+        <a href="https://www.instagram.com/barbearia_do_danilo_" target="_blank" class="bb-insta-btn">
+          📸 Instagram
+        </a>
+        <div class="bb-who" id="bb-who"></div>
+      </div>
     </div>
     <div class="bb-tabs" id="bb-tabs"></div>
     <div class="bb-body" id="bb-body">Carregando dados...</div>
@@ -96,7 +140,6 @@
   (function(){
     "use strict";
 
-    // Conexão Supabase com a URL corrigida
     const SUPABASE_URL = "https://lgdngncnmlbtshclanzy.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnZG5nbmNubWxidHNoY2xhbnp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTIwNzgsImV4cCI6MjEwMjc4ODA3OH0.FSmfOpRQqeaEeRoGK1kQ-lRIyeG-DK6wp68wzB0mjcY"; 
     
@@ -107,10 +150,10 @@
     const whoBox = document.getElementById('bb-who');
     const tabsBox = document.getElementById('bb-tabs');
 
-    let config = { nomeLoja: 'Danilo Barber Shop', whatsappAdmin: '5561999999999' };
+    let config = { nomeLoja: 'Barbearia Danilo', whatsappAdmin: '5561981112142' };
     
     let barbeiros = [
-      { id:'1', nome:'DANILO', telefone_whatsapp:'5561999999999', porcentagem_comissao:50, ativo:true },
+      { id:'1', nome:'DANILO', telefone_whatsapp:'5561981112142', porcentagem_comissao:50, ativo:true },
       { id:'2', nome:'MAXSUELL', telefone_whatsapp:'5561977777777', porcentagem_comissao:50, ativo:true },
       { id:'3', nome:'DIEGO', telefone_whatsapp:'5561988888888', porcentagem_comissao:50, ativo:true }
     ];
@@ -153,7 +196,49 @@
     }
 
     function renderLogo(){
-      logoBox.innerHTML = `<div><div class="bb-badge-name">${esc(config.nomeLoja)}</div><div class="bb-badge-sub">Barber & Executive Grooming</div></div>`;
+      logoBox.innerHTML = `
+        <div class="bb-logo-wrap">
+          <svg class="bb-logo-img" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="98" fill="#a4d1c9" stroke="#121212" stroke-width="4"/>
+            <path id="curve" fill="none" d="M 25,100 A 75,75 0 0,1 175,100" />
+            <text font-family="Arial Black, Impact, sans-serif" font-size="22" font-weight="900" fill="#0d0d0d" text-anchor="middle">
+              <textPath href="#curve" startOffset="50%">BARBEARIA</textPath>
+            </text>
+            <text x="100" y="82" font-family="Arial, sans-serif" font-size="18" font-weight="900" fill="#0d0d0d" text-anchor="middle" letter-spacing="2">DANILO</text>
+            
+            <!-- Barber Pole Esquerdo -->
+            <g transform="translate(20, 85)">
+              <rect x="0" y="0" width="22" height="65" rx="10" fill="#fff" stroke="#000" stroke-width="2"/>
+              <path d="M0,10 L22,25 M0,25 L22,40 M0,40 L22,55" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/>
+              <path d="M0,20 L22,35 M0,35 L22,50" stroke="#1976d2" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="11" cy="-2" r="7" fill="#000"/>
+              <circle cx="11" cy="67" r="7" fill="#000"/>
+            </g>
+
+            <!-- Barber Pole Direito -->
+            <g transform="translate(158, 85)">
+              <rect x="0" y="0" width="22" height="65" rx="10" fill="#fff" stroke="#000" stroke-width="2"/>
+              <path d="M0,10 L22,25 M0,25 L22,40 M0,40 L22,55" stroke="#d32f2f" stroke-width="6" stroke-linecap="round"/>
+              <path d="M0,20 L22,35 M0,35 L22,50" stroke="#1976d2" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="11" cy="-2" r="7" fill="#000"/>
+              <circle cx="11" cy="67" r="7" fill="#000"/>
+            </g>
+
+            <!-- Bigode e Cabelo -->
+            <path d="M 82 105 Q 100 95 118 105 Q 100 120 82 105 Z" fill="#000"/>
+            <path d="M 70 125 Q 100 120 100 135 Q 100 120 130 125 Q 115 145 100 142 Q 85 145 70 125 Z" fill="#000"/>
+
+            <!-- Tesouras -->
+            <path d="M 72,118 L 128,155 M 128,118 L 72,155" stroke="#000" stroke-width="3"/>
+            <circle cx="68" cy="115" r="5" fill="none" stroke="#000" stroke-width="2"/>
+            <circle cx="132" cy="115" r="5" fill="none" stroke="#000" stroke-width="2"/>
+          </svg>
+          <div>
+            <div class="bb-badge-name">${esc(config.nomeLoja)}</div>
+            <div class="bb-badge-sub">Barber & Executive Grooming</div>
+          </div>
+        </div>
+      `;
     }
 
     function renderWho(){
@@ -241,7 +326,7 @@
             <div class="bb-field" style="margin-bottom:20px;">
               <label>Serviço Adicional</label>
               <select id="ag-adicional">
-                <option value="Somente a opção não mesmo">Não (Apenas o Corte)</option>
+                <option value="Somente o corte">Não (Apenas o Corte)</option>
                 <option value="Barba Completa (+R$30)">Barba Completa (+R$30)</option>
                 <option value="Sobrancelha (+R$15)">Sobrancelha (+R$15)</option>
                 <option value="Freestyle / Desenho (+R$20)">Freestyle / Desenho (+R$20)</option>
@@ -292,7 +377,7 @@
         }
 
         const dataFormatada = data.split('-').reverse().join('/');
-        const textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPra o dia e hora tal: ${dataFormatada} às ${hora}\nserviço adicional: ${adicional}`;
+        const textoMsg = `Olá, ${barbeiroObj.nome}.\n\nMe chamo "${cliente}"\nAgendei o corte: ${corteNome}\nPara a data: ${dataFormatada} às ${hora}\nServiço Adicional: ${adicional}`;
         
         const urlWspBarbeiro = `https://wa.me/${barbeiroObj.telefone_whatsapp}?text=${encodeURIComponent(textoMsg)}`;
         const urlWspGestor = `https://wa.me/${config.whatsappAdmin}?text=${encodeURIComponent("Notificação de Agendamento:\n" + textoMsg)}`;
@@ -300,7 +385,7 @@
         document.getElementById('ag-confirmacao').innerHTML = `
           <div class="bb-panel" style="border-left: 4px solid var(--dourado);">
             <h3 style="color:var(--dourado); margin-bottom:10px;">✔ Agendamento Salvo com Sucesso!</h3>
-            <p style="margin-bottom:15px; font-size:14px;">Envie o comprovante diretamente pelo WhatsApp:</p>
+            <p style="margin-bottom:15px; font-size:14px;">Envie a confirmação direto pelo WhatsApp:</p>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
               <a href="${urlWspBarbeiro}" target="_blank" class="bb-btn wsp">📲 Notificar Barbeiro (${barbeiroObj.nome})</a>
               <a href="${urlWspGestor}" target="_blank" class="bb-btn wsp" style="background:#333;">👑 Notificar Gestor (Danilo)</a>
@@ -432,7 +517,7 @@
           <h2>Adicionar Barbeiro (Exclusivo Gestor)</h2>
           <div class="bb-form-row">
             <div class="bb-field"><label>Nome</label><input type="text" id="novo-b-nome" placeholder="Ex: LUCAS"></div>
-            <div class="bb-field"><label>WhatsApp</label><input type="text" id="novo-b-wsp" placeholder="5561999999999"></div>
+            <div class="bb-field"><label>WhatsApp</label><input type="text" id="novo-b-wsp" placeholder="5561981112142"></div>
             <button class="bb-btn primary" id="btn-add-b" style="margin-top:18px;">Cadastrar Barbeiro</button>
           </div>
         </div>
