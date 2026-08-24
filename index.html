@@ -96,8 +96,8 @@
   (function(){
     "use strict";
 
-    // Conexão Supabase com suas credenciais reais
-    const SUPABASE_URL = "https://lgdngncxmlbtshclanzx.supabase.co"; 
+    // Conexão Supabase com a URL corrigida
+    const SUPABASE_URL = "https://lgdngncnmlbtshclanzy.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnZG5nbmNubWxidHNoY2xhbnp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMTIwNzgsImV4cCI6MjEwMjc4ODA3OH0.FSmfOpRQqeaEeRoGK1kQ-lRIyeG-DK6wp68wzB0mjcY"; 
     
     const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -282,7 +282,6 @@
           porcentagem_comissao: 50
         };
 
-        // Grava no Supabase diretamente
         const { error } = await sbClient.from('se_agendamentos').insert([novoItem]);
 
         if (error) {
